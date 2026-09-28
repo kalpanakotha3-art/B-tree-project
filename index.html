@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>B-Tree Visualizer</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{background:#0a0e1a;color:#fff;font-family:Segoe UI;text-align:center;padding:15px}
+h1{color:#38bdf8;margin:12px}.box{background:#1e293b;padding:12px;border-radius:10px;display:inline-flex;gap:6px;flex-wrap:wrap;margin:15px}
+input,select,button{padding:8px 14px;border-radius:7px;border:0}input{width:110px}button{background:#38bdf8;font-weight:bold;cursor:pointer}
+.del{background:#fb7185}.lvl{display:flex;justify-content:center;gap:25px;margin:20px 0;flex-wrap:wrap}
+.node{display:flex;background:#111827;border:2px solid #38bdf8;border-radius:10px;overflow:hidden}
+.key{padding:8px 14px;border-right:1px solid #38bdf8;min-width:35px;background:#1e293b;font-weight:bold}
+.key:last-child{border:0}.found{background:#facc15;color:#000}
+</style></head><body>
+<h1>🌳 B-Tree Visualizer - Order 4</h1>
+<div class="box">
+<select id="ord"><option value="3">Order 3</option><option value="4" selected>Order 4</option><option value="5">Order 5</option></select>
+<input id="v" type="number" placeholder="Number">
+<button onclick="ins()">Insert</button><button onclick="sch()">Search</button>
+<button class="del" onclick="rem()">Delete</button><button class="del" onclick="clr()">Clear</button>
+</div><div id="msg" style="color:#7dd3fc;height:20px"></div><div id="tree"></div>
+<script>
+class N{constructor(t,l=true){this.t=t;this.k=[];this.c=[];this.l=l}}
+class B{constructor(t){this.t=t;this.r=new N(t)}S(k,n=this.r){let i=0;while(i<n.k.length&&k>n.k[i])i++;if(n.k[i]==k)return 1;if(n.l)return 0;return this.S(k,n.c[i])}
+I(k){let r=this.r;if(r.k.length==2*this.t-1){let s=new N(this.t,0);s.c[0]=r;this.Sp(s,0);this.r=s;this.In(s,k)}else this.In(r,k)}
+In(x,k){let i=x.k.length-1;if(x.l){x.k.push(0);while(i>=0&&k<x.k[i]){x.k[i+1]=x.k[i];i--}x.k[i+1]=k}else{while(i>=0&&k<x.k[i])i--;i++;if(x.c[i].k.length==2*this.t-1){this.Sp(x,i);if(k>x.k[i])i++}this.In(x.c[i],k)}}
+Sp(x,i){let t=this.t,y=x.c[i],z=new N(t,y.l);z.k=y.k.splice(t);if(!y.l)z.c=y.c.splice(t);let m=y.k.pop();x.c.splice(i+1,0,z);x.k.splice(i,0,m)}
+G(n=this.r,a=[]){for(let i=0;i<n.k.length;i++){if(!n.l)this.G(n.c[i],a);a.push(n.k[i])}if(!n.l)this.G(n.c[n.k.length],a);return a}
+D(k){let a=this.G().filter(v=>v!=k);this.r=new N(this.t);a.forEach(v=>this.I(v))}}
+let t=2,tr=new B(t);const o=document.getElementById('ord'),inp=document.getElementById('v'),mg=document.getElementById('msg');
+o.onchange=()=>{t=Math.ceil(o.value/2);tr=new B(t);dr()}
+function ins(){let v=+inp.value;if(isNaN(v))return;tr.I(v);inp.value="";dr(v);mg.textContent=`Inserted ${v}`}
+function sch(){let v=+inp.value,f=tr.S(v);dr(f?v:null);mg.textContent=f?`Found ${v} ✅`:`Not found ❌`}
+function rem(){let v=+inp.value;tr.D(v);dr();mg.textContent=`Deleted ${v}`}
+function clr(){tr=new B(t);dr();mg.textContent="Cleared"}
+function dr(h=null){let b=document.getElementById('tree');if(!tr.r.k.length){b.innerHTML='<p style="color:#64748b">Empty Tree - Insert numbers</p>';return}
+let q=[{n:tr.r,l:0}],L=[];while(q.length){let {n,l}=q.shift();(L[l]=L[l]||[]).push(n);if(!n.l)n.c.forEach(c=>q.push({n:c,l:l+1}))}
+let ht="";L.forEach((lv,i)=>{ht+=`<div style="color:#64748b;font-size:12px">LEVEL ${i}</div><div class=lvl>`;lv.forEach(n=>{ht+='<div class=node>';n.k.forEach(k=>ht+=`<div class="key ${k==h?'found':''}">${k}</div>`);ht+='</div>'});ht+='</div>'});b.innerHTML=ht}
+dr();
+</script></body></html>
